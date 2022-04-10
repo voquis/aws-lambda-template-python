@@ -14,22 +14,34 @@ def get_content(payload):
         - Invocation behind an AWS HTTP v2 API Gateway
     """
 
-    if 'body' not in payload and 'isBase64Encoded' not in payload and 'headers' not in payload:
-        # Handle the direct invocation
+    if 'body' not in payload:
         return payload
 
     content = payload['body']
 
-    if 'isBase64Encoded' in payload:
+    if 'isBase64Encoded' in payload and payload['isBase64Encoded'] is True:
         content = str(base64.b64decode(payload['body']), "utf-8")
 
-    content_type = payload['headers'].get('content-type', '').lower()
+    if 'headers' not in payload:
+        return content
 
-    if 'application/x-www-form-urlencoded' in content_type:
+    headers = payload['headers']
+
+    if 'Content-Type' not in headers:
+        return content
+
+    content_type = headers['Content-Type']
+
+    if not isinstance(content_type, str):
+        return content
+
+    content_type = content_type.lower()
+
+    if content_type == 'application/x-www-form-urlencoded':
         html_decoded = urllib.parse.unquote(content)
         content = urllib.parse.parse_qs(html_decoded)
 
-    if 'application/json' in content_type:
+    if  content_type == 'application/json':
         content = json.loads(content)
 
     return content
