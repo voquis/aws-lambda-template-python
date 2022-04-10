@@ -1,4 +1,8 @@
-FROM python:3-slim
+# Stage 1
+#   Local development image that also produces final build
+#   to optionally be used in next stage.
+#   To only use this stage, use --taget dev when building
+FROM python:3-slim AS dev
 
 RUN apt-get update
 RUN apt-get upgrade
@@ -37,3 +41,15 @@ RUN cd lambda && ../scripts/build.sh
 
 # Override entrypoint
 ENTRYPOINT [ "bash" ]
+
+# Stage 2
+#   Copy and install wheel from previous stage
+#   to build a final production-ready image
+FROM public.ecr.aws/lambda/python:3
+
+COPY --from=dev /project/lambda/dist/*.whl .
+COPY --from=dev /project/lambda/app.py .
+
+RUN pip install *.whl
+
+CMD [ "app.handler" ]
