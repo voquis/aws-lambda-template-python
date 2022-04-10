@@ -3,6 +3,7 @@ AWS Lambda handler, can be invoked directly or integrated with an AWS HTTP API G
 https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
 """
 
+import logging
 from example import payload
 
 def handler(event, context):
@@ -16,6 +17,6 @@ def handler(event, context):
     https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
     """
 
-    print(context)
+    logging.debug(context)
     content = payload.get_content(event)
     return content

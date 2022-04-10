@@ -77,3 +77,29 @@ Make a HTTP Post request to the lambda with:
 ```shell
 curl -d '{"key":"value"}' -X POST http://127.0.0.1:10111/2015-03-31/functions/function/invocations
 ```
+
+## Run a Local API gateway with Serverless Application Model (SAM)
+Locally, the AWS Serverless Application Model allows [running an AWS API Gateway locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-start-api.html).
+
+Once installed and the `sam` command is available, optionally disable telemetry:
+```shell
+export SAM_CLI_TELEMETRY=0
+```
+
+Start a local SAM API Gateway on arbitrary port 10112 with:
+```shell
+sam local start-api -p 10112
+```
+
+Send sample requests to API Gateway (v1) with:
+```shell
+curl http://127.0.0.1:10112/api -X POST --data '{"key": "test value"}' -H 'content-type:application/json'
+curl http://127.0.0.1:10112/api -X POST --data-binary @./lambda/tests/unit/fixtures/request.json -H 'content-type:application/json'
+curl http://127.0.0.1:10112/api --data-urlencode "key=test value"
+```
+
+Send sample requests to HTTP API Gateway (v2) with:
+```shell
+curl http://127.0.0.1:10112/httpapiv2 -X POST --data '{"key": "test value"}' -H 'content-type:application/json'
+curl http://127.0.0.1:10112/httpapiv2 --data-urlencode "key=test value"
+```
