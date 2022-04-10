@@ -28,10 +28,12 @@ poetry new example --src
 ### Docker
 Developing inside a Docker container ensures a consistent experience and more closely matches the final build.
 
-To develop inside a container, first build an image that sets up a limited-privilege user with the following. Note that will run tests and produce builds.
+To develop inside a container, first build an image that sets up a limited-privilege user with the following.
+Note that will run tests and produce builds.
+The `dev` target uses the first stage of the multi-stage [Dockerfile](./Dockerfile).
 
 ```shell
-docker build -t python-lambda .
+docker build -t python-lambda/template/dev --target dev .
 ```
 
 To then develop inside a container using this image, mount the entire project into a container (in addition to the local AWS config directory) with:
@@ -40,7 +42,7 @@ To then develop inside a container using this image, mount the entire project in
 docker run -i -t --rm \
   -v $(pwd):/project \
   -v $HOME/.aws:/home/lambda/.aws:ro \
-  python-lambda
+  python-lambda/template/dev
 ```
 
 ### Run tests
@@ -53,4 +55,25 @@ cd lambda
 Install dependencies (including development) and run tests with:
 ```
 ../scripts/validate.sh
+```
+
+## Build and run Lambda Docker image
+AWS [provides a Docker image](https://gallery.ecr.aws/lambda/python) containing the python Lambda runtime.
+Build a local image using this AWS image with the following.
+Note this uses the same Dockerfile as above without stage targeting.
+
+```
+docker build -t python-lambda/template/lambda .
+```
+
+Then start the Lambda function locally on arbitrary port `10111` with:
+```
+docker run --rm \
+  -p 10111:8080 \
+  python-lambda/template/lambda
+```
+
+Make a HTTP Post request to the lambda with:
+```shell
+curl -d '{"key":"value"}' -X POST http://127.0.0.1:10111/2015-03-31/functions/function/invocations
 ```
